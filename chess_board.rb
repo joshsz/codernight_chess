@@ -16,14 +16,14 @@ class ChessBoard
   end
 
   def set(x,y,piece)
-    space_at(x,y).piece = piece
+    at(x,y).piece = piece
   end
 
   def at(x,y=nil)
     if y.nil?
-      space_at(*coords_from_notation(x)).piece
+      space_at(*coords_from_notation(x))
     else
-      space_at(x,y).piece
+      space_at(x,y)
     end
   end
 
@@ -32,7 +32,7 @@ class ChessBoard
     def coords_from_notation(n)
       col = n[0]
       row = n[1]
-      x = ('a'..'h').to_a.index(col)
+      x = ('a'..'h').to_a.index(col.downcase)
       y = 8 - row.to_i
       [x,y]
     end
@@ -119,9 +119,16 @@ class Piece
     end
   end
 
-  def movements
-    []
+  def self.filter_edges(board, from_space, motions)
+    fx = from_space.x
+    fy = from_space.y
+    motions.select do |motion|
+      to_space = board.at(fx + motion[0], fy + motion[1])
+      !to_space.nil?
+    end
   end
+
+  def movements(current_space, board); []; end
 end
 
 class Rook < Piece ; end
@@ -129,7 +136,7 @@ class Knight < Piece ; end
 class Bishop < Piece ; end
 class Queen < Piece ; end
 class King < Piece
-  def movements
+  def movements(current_space, board)
     n = (-1..1)
     n.map{|x| n.map{|y| [x,y] }} - [[0,0]]
   end

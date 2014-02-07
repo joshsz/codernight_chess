@@ -1,4 +1,5 @@
 require './chess_board'
+require 'pry'
 describe Piece do
   it "requires color to init" do
     ->{
@@ -39,23 +40,50 @@ describe Piece do
   end
 
   describe "movements" do
+    let(:bottom_edge) {Space.new()}
     it "sends an empty list for a default Piece" do
-      expect(Piece.new(:white).movements).to eq([])
+      expect(Piece.new(:white).movements(nil,nil)).to eq([])
+    end
+
+    describe "#filter_edges" do
+      it "restricts valid motions to motions on the board" do
+        motions = [
+          [-1, -1], [ 0,-1], [ 1,-1],
+          [-1,  0],          [ 0, 0],
+          [-1,  1], [ 0, 1], [ 1, 1]
+        ]
+        b = ChessBoard.new
+        space = b.at('a1')
+
+        result = Piece.filter_edges(b, space, motions)
+        expect(result.sort).to eq([
+                    [ 0,-1], [ 1,-1],
+                             [ 0, 0],
+        ].sort)
+      end
     end
 
     describe Pawn do
-      it "moves forward one space"
-      it "moves forward two spaces if it is on its second row"
-      it "moves diagonally if there is an enemy to capture"
-      it "moves diagonally if an enemy has just passed it" #en passant
+      context "white" do
+        it "moves up one space" do
+          expect(Pawn.new(:white).movements).to eq([
+            [0,1]
+          ])
+        end
+        it "moves forward two spaces if it is on its second row"
+        it "moves diagonally if there is an enemy to capture"
+      end
+
+      # can't actually do en-passant
+      # it "moves diagonally if an enemy has just passed it" #en passant
     end
 
     describe King do
       it "moves one space in any direction" do
-        expect(King.new(:white).movements).to eq([
-          [-1, -1], [-1, 0], [-1, 1],
-          [ 0, -1],          [ 0, 1],
-          [ 1, -1], [ 1, 0], [ 1, 1]
+        expect(King.new(:white).movements(nil,nil)).to eq([
+          [-1, -1], [ 0,-1], [ 1,-1],
+          [-1,  0],          [ 0, 0],
+          [-1,  1], [ 0, 1], [ 1, 1]
         ])
       end
     end
@@ -100,6 +128,16 @@ describe Space do
       expect(s.is?(1,2)).to be_true
     end
   end
+
+  describe "x and y" do
+    let(:s) { Space.new(1,2) }
+    it "allows access to x" do
+      expect(s.x).to eq 1
+    end
+    it "allows access to y" do
+      expect(s.y).to eq 2
+    end
+  end
 end
 
 describe ChessBoard do
@@ -119,7 +157,7 @@ EOT
   it "allows setting squares by coordinate" do
     b = ChessBoard.new
     b.set(0, 0, Rook.new(:black))
-    expect(b.at(0,0)).to eq(Rook.new(:black))
+    expect(b.at(0,0).piece).to eq(Rook.new(:black))
   end
 
   describe "setup" do
@@ -130,9 +168,9 @@ EOT
 
     it "takes a string as input to initialize the board state" do
       b = sample_board
-      expect(b.at(0,0)).to eq(Rook.new(:black))
-      expect(b.at(1,1)).to eq(Pawn.new(:black))
-      expect(b.at(3,7)).to eq(Queen.new(:white))
+      expect(b.at(0,0).piece).to eq(Rook.new(:black))
+      expect(b.at(1,1).piece).to eq(Pawn.new(:black))
+      expect(b.at(3,7).piece).to eq(Queen.new(:white))
     end
   end
 
@@ -141,10 +179,20 @@ EOT
       expect(sample_board.at(0,0)).to_not be_nil
     end
 
+    it "returns nil for an invalid space" do
+      expect(sample_board.at(-1,-1)).to be_nil
+    end
+
     it "looks up squares by algebraic notation" do
-      expect(sample_board.at('a1')).to eq(Rook.new(:white))
-      expect(sample_board.at('h8')).to eq(Rook.new(:black))
-      expect(sample_board.at('d7')).to eq(Pawn.new(:black))
+      expect(sample_board.at('a1').piece).to eq(Rook.new(:white))
+      expect(sample_board.at('h8').piece).to eq(Rook.new(:black))
+      expect(sample_board.at('d7').piece).to eq(Pawn.new(:black))
+    end
+
+    it "ignores case in algebraic notation" do
+      expect(sample_board.at('A1').piece).to eq(Rook.new(:white))
+      expect(sample_board.at('H8').piece).to eq(Rook.new(:black))
+      expect(sample_board.at('D7').piece).to eq(Pawn.new(:black))
     end
   end
 
