@@ -39,6 +39,10 @@ describe Piece do
   end
 
   describe "movements" do
+    it "sends an empty list for a default Piece" do
+      expect(Piece.new(:white).movements).to eq([])
+    end
+
     describe Pawn do
       it "moves forward one space"
       it "moves forward two spaces if it is on its second row"
@@ -47,7 +51,13 @@ describe Piece do
     end
 
     describe King do
-      it "moves one space in any direction"
+      it "moves one space in any direction" do
+        expect(King.new(:white).movements).to eq([
+          [-1, -1], [-1, 0], [-1, 1],
+          [ 0, -1],          [ 0, 1],
+          [ 1, -1], [ 1, 0], [ 1, 1]
+        ])
+      end
     end
 
     describe Queen do

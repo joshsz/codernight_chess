@@ -119,7 +119,7 @@ class Piece
     end
   end
 
-  def legal_moves(from_space)
+  def movements
     []
   end
 end
@@ -128,5 +128,10 @@ class Rook < Piece ; end
 class Knight < Piece ; end
 class Bishop < Piece ; end
 class Queen < Piece ; end
-class King < Piece ; end
+class King < Piece
+  def movements
+    n = (-1..1)
+    n.map{|x| n.map{|y| [x,y] }} - [[0,0]]
+  end
+end
 class Pawn < Piece ; end
