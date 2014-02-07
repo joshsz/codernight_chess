@@ -1,17 +1,17 @@
 require './chess_board'
 describe Piece do
- it "requires color and type to init" do
+  it "requires color to init" do
     ->{
       Piece.new
     }.should raise_exception
 
     ->{
-      Piece.new(:black, :knight)
+      Piece.new(:black)
     }.should_not raise_exception
   end
 
   it "is white or black" do
-    p = Piece.new(:black, :knight)
+    p = Piece.new(:black)
     expect(p.color).to eq(:black)
     expect(p.black?).to be_true
     expect(p.white?).to be_false
@@ -19,10 +19,10 @@ describe Piece do
 
   describe "equality" do
     it "is equal if its color and type are equal" do
-      p1 = Piece.new(:black, :rook)
-      p2 = Piece.new(:white, :rook)
-      p3 = Piece.new(:black, :pawn)
-      p4 = Piece.new(:black, :rook)
+      p1 = Rook.new(:black)
+      p2 = Rook.new(:white)
+      p3 = Pawn.new(:black)
+      p4 = Rook.new(:black)
 
       expect(p1).to_not eq(p2)
       expect(p1).to_not eq(p3)
@@ -33,10 +33,41 @@ describe Piece do
   describe "coding" do
     it "generates the right piece from a code" do
       expect(Piece.from_code('--')).to be_nil
-      expect(Piece.from_code('wN')).to eq(Piece.new(:white, :knight))
-      expect(Piece.from_code('bK')).to eq(Piece.new(:black, :king))
+      expect(Piece.from_code('wN')).to eq(Knight.new(:white))
+      expect(Piece.from_code('bK')).to eq(King.new(:black))
     end
   end
+
+  describe "movements" do
+    describe Pawn do
+      it "moves forward one space"
+      it "moves forward two spaces if it is on its second row"
+      it "moves diagonally if there is an enemy to capture"
+      it "moves diagonally if an enemy has just passed it" #en passant
+    end
+
+    describe King do
+      it "moves one space in any direction"
+    end
+
+    describe Queen do
+      it "moves any number of spaces in any single direction"
+    end
+
+    describe Bishop do
+      it "moves any number of spaces along a diagonal"
+    end
+
+    describe Knight do
+      it "moves out two and over one"
+    end
+
+    describe Rook do
+      it "moves any number of spaces along a straight line"
+    end
+
+  end
+
 end
 
 describe Space do
@@ -77,8 +108,8 @@ EOT
 
   it "allows setting squares by coordinate" do
     b = ChessBoard.new
-    b.set(0,0,Piece.new(:black,:rook))
-    expect(b.at(0,0)).to eq(Piece.new(:black, :rook))
+    b.set(0, 0, Rook.new(:black))
+    expect(b.at(0,0)).to eq(Rook.new(:black))
   end
 
   describe "setup" do
@@ -89,9 +120,9 @@ EOT
 
     it "takes a string as input to initialize the board state" do
       b = sample_board
-      expect(b.at(0,0)).to eq(Piece.new(:black, :rook))
-      expect(b.at(1,1)).to eq(Piece.new(:black, :pawn))
-      expect(b.at(3,7)).to eq(Piece.new(:white, :queen))
+      expect(b.at(0,0)).to eq(Rook.new(:black))
+      expect(b.at(1,1)).to eq(Pawn.new(:black))
+      expect(b.at(3,7)).to eq(Queen.new(:white))
     end
   end
 
@@ -101,9 +132,9 @@ EOT
     end
 
     it "looks up squares by algebraic notation" do
-      expect(sample_board.at('a1')).to eq(Piece.new(:white, :rook))
-      expect(sample_board.at('h8')).to eq(Piece.new(:black, :rook))
-      expect(sample_board.at('d7')).to eq(Piece.new(:black, :pawn))
+      expect(sample_board.at('a1')).to eq(Rook.new(:white))
+      expect(sample_board.at('h8')).to eq(Rook.new(:black))
+      expect(sample_board.at('d7')).to eq(Pawn.new(:black))
     end
   end
 

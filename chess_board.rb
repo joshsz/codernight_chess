@@ -66,12 +66,15 @@ class Space
 end
 
 class Piece
-  def initialize(color, type)
+  def initialize(color)
     @color = color
-    @type = type
   end
 
-  attr_reader :color, :type
+  attr_reader :color
+
+  def type
+    self.class.name.downcase.to_sym
+  end
 
   def black?
     color == :black
@@ -94,17 +97,18 @@ class Piece
 
   def self.from_code(code)
     return nil if code == '--'
-    Piece.new(color_from_code(code[0]), type_from_code(code[1]))
+    klass = type_from_code(code[1])
+    klass.new(color_from_code(code[0]))
   end
 
   def self.type_from_code(code)
     case code
-    when 'R' then :rook
-    when 'N' then :knight
-    when 'B' then :bishop
-    when 'Q' then :queen
-    when 'K' then :king
-    when 'P' then :pawn
+    when 'R' then Rook
+    when 'N' then Knight
+    when 'B' then Bishop
+    when 'Q' then Queen
+    when 'K' then King
+    when 'P' then Pawn
     end
   end
 
@@ -114,4 +118,15 @@ class Piece
     else :white
     end
   end
+
+  def legal_moves(from_space)
+    []
+  end
 end
+
+class Rook < Piece ; end
+class Knight < Piece ; end
+class Bishop < Piece ; end
+class Queen < Piece ; end
+class King < Piece ; end
+class Pawn < Piece ; end
