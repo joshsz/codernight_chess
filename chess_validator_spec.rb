@@ -29,6 +29,14 @@ describe Piece do
       expect(p1).to     eq(p4)
     end
   end
+
+  describe "coding" do
+    it "generates the right piece from a code" do
+      expect(Piece.from_code('--')).to be_nil
+      expect(Piece.from_code('wN')).to eq(Piece.new(:white, :knight))
+      expect(Piece.from_code('bK')).to eq(Piece.new(:black, :king))
+    end
+  end
 end
 
 describe Space do
@@ -54,19 +62,8 @@ describe Space do
 end
 
 describe ChessBoard do
-  it "allows setting squares by coordinate" do
-    b = ChessBoard.new
-    b.set(0,0,Piece.new(:black,:rook))
-    expect(b.at(0,0)).to_equal Piece.new(:black, :rook)
-  end
-  describe "setup" do
-    it "should initialize with a 64-space board" do
-      b = ChessBoard.new
-      expect(b.board.flatten.length).to eq(64)
-    end
-
-    it "takes a string as input to initialize the board state" do
-      b = ChessBoard.build <<EOT
+  let(:sample_board) do
+    ChessBoard.build <<EOT
 bR bN bB bQ bK bB bN bR
 bP bP bP bP bP bP bP bP
 -- -- -- -- -- -- -- --
@@ -76,13 +73,38 @@ bP bP bP bP bP bP bP bP
 wP wP wP wP wP wP wP wP
 wR wN wB wQ wK wB wN wR
 EOT
-      expect(b.board[0][0]).to_not be_nil
+  end
+
+  it "allows setting squares by coordinate" do
+    b = ChessBoard.new
+    b.set(0,0,Piece.new(:black,:rook))
+    expect(b.at(0,0)).to eq(Piece.new(:black, :rook))
+  end
+
+  describe "setup" do
+    it "should initialize with a 64-space board" do
+      b = ChessBoard.new
+      expect(b.board.flatten.length).to eq(64)
+    end
+
+    it "takes a string as input to initialize the board state" do
+      b = sample_board
+      expect(b.at(0,0)).to eq(Piece.new(:black, :rook))
+      expect(b.at(1,1)).to eq(Piece.new(:black, :pawn))
+      expect(b.at(3,7)).to eq(Piece.new(:white, :queen))
     end
   end
 
   describe "lookup" do
-    it "looks up squares by x and y coordinate"
-    it "looks up squares by algebraic notation"
+    it "looks up squares by x and y coordinate" do
+      expect(sample_board.at(0,0)).to_not be_nil
+    end
+
+    it "looks up squares by algebraic notation" do
+      expect(sample_board.at('a1')).to eq(Piece.new(:white, :rook))
+      expect(sample_board.at('h8')).to eq(Piece.new(:black, :rook))
+      expect(sample_board.at('d7')).to eq(Piece.new(:black, :pawn))
+    end
   end
 
 end
