@@ -1,3 +1,15 @@
+class Handler
+  def self.process(board, moves)
+    b = ChessBoard.build(board)
+    results = moves.split(/\n/).map do |m|
+      f, t = m.split(/ /)
+      puts "checking from #{f} to #{t}"
+      b.valid_move?(f,t) ? "LEGAL" : "ILLEGAL"
+    end
+    results.join("\n")
+  end
+end
+
 class ChessBoard
   attr_accessor :board
 
@@ -13,6 +25,14 @@ class ChessBoard
 
   def initialize
     build_board
+  end
+
+  def valid_move?(f, t)
+    from = at(f)
+    to   = at(t)
+
+    return false unless from.piece
+    from.piece.movements(from, self).include? to
   end
 
   def set(x,y,piece)
@@ -62,6 +82,25 @@ class Space
 
   def is?(ox,oy)
     x == ox && y == oy
+  end
+
+  def ==(other)
+    self.equals(other)
+  end
+  def equals(other)
+    other.respond_to?(:x) &&
+      other.respond_to?(:y) &&
+      other.x == self.x &&
+      other.y == self.y
+  end
+
+  def <=>(other)
+    dx = x <=> other.x
+    if dx == 0
+      y <=> other.y
+    else
+      dx
+    end
   end
 end
 
@@ -119,15 +158,6 @@ class Piece
     end
   end
 
-  def self.filter_edges(board, from_space, motions)
-    fx = from_space.x
-    fy = from_space.y
-    motions.select do |motion|
-      to_space = board.at(fx + motion[0], fy + motion[1])
-      !to_space.nil?
-    end
-  end
-
   def movements(current_space, board); []; end
 end
 
@@ -138,7 +168,15 @@ class Queen < Piece ; end
 class King < Piece
   def movements(current_space, board)
     n = (-1..1)
-    n.map{|x| n.map{|y| [x,y] }} - [[0,0]]
+    list = []
+    fx = current_space.x
+    fy = current_space.y
+    n.each{|x| n.each{|y| list << board.at(fx + x, fy + y) }}
+    list.compact - [current_space]
   end
 end
-class Pawn < Piece ; end
+class Pawn < Piece
+  def movements(current_space, board)
+    [board.at(current_space.x, current_space.y - 1)].compact
+  end
+end

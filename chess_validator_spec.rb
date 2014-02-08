@@ -45,34 +45,18 @@ describe Piece do
       expect(Piece.new(:white).movements(nil,nil)).to eq([])
     end
 
-    describe "#filter_edges" do
-      it "restricts valid motions to motions on the board" do
-        motions = [
-          [-1, -1], [ 0,-1], [ 1,-1],
-          [-1,  0],          [ 0, 0],
-          [-1,  1], [ 0, 1], [ 1, 1]
-        ]
-        b = ChessBoard.new
-        space = b.at('a1')
-
-        result = Piece.filter_edges(b, space, motions)
-        expect(result.sort).to eq([
-                    [ 0,-1], [ 1,-1],
-                             [ 0, 0],
-        ].sort)
-      end
-    end
-
     describe Pawn do
-      context "white" do
+      context "white in the middle" do
         it "moves up one space" do
-          expect(Pawn.new(:white).movements).to eq([
-            [0,1]
+          b = ChessBoard.new
+          s = b.at('d4')
+          expect(Pawn.new(:white).movements(s,b)).to eq([
+            b.at('d5')
           ])
         end
+      end
         it "moves forward two spaces if it is on its second row"
         it "moves diagonally if there is an enemy to capture"
-      end
 
       # can't actually do en-passant
       # it "moves diagonally if an enemy has just passed it" #en passant
@@ -80,11 +64,11 @@ describe Piece do
 
     describe King do
       it "moves one space in any direction" do
-        expect(King.new(:white).movements(nil,nil)).to eq([
-          [-1, -1], [ 0,-1], [ 1,-1],
-          [-1,  0],          [ 0, 0],
-          [-1,  1], [ 0, 1], [ 1, 1]
-        ])
+        b = ChessBoard.new
+        s = b.at('d4')
+        expect(King.new(:white).movements(s,b).sort).to eq(
+          %w{c3 c4 c5 d3 d5 e3 e4 e5}.map{|n| b.at(n) }.sort
+        )
       end
     end
 
@@ -138,20 +122,39 @@ describe Space do
       expect(s.y).to eq 2
     end
   end
+
+  describe "equality" do
+    it "is equal if its x and y match" do
+      s1 = Space.new(1,2)
+      s2 = Space.new(1,1)
+      s3 = Space.new(2,2)
+      s4 = Space.new(1,2)
+
+      expect(s1).to_not eq(s2)
+      expect(s1).to_not eq(s3)
+      expect(s1).to     eq(s4)
+    end
+  end
+
+  describe "#<=>" do # really just need this for testing...
+    it "sorts" do
+      s1 = Space.new(1,2)
+      s2 = Space.new(1,1)
+      s3 = Space.new(2,2)
+      s4 = Space.new(1,2)
+
+      expect(s1 <=> s2).to eq( 1)
+      expect(s1 <=> s3).to eq(-1)
+      expect(s1 <=> s4).to eq( 0)
+      expect(s3 <=> s1).to eq( 1)
+      expect(s3 <=> s2).to eq( 1)
+    end
+  end
 end
 
 describe ChessBoard do
-  let(:sample_board) do
-    ChessBoard.build <<EOT
-bR bN bB bQ bK bB bN bR
-bP bP bP bP bP bP bP bP
--- -- -- -- -- -- -- --
--- -- -- -- -- -- -- --
--- -- -- -- -- -- -- --
--- -- -- -- -- -- -- --
-wP wP wP wP wP wP wP wP
-wR wN wB wQ wK wB wN wR
-EOT
+  let(:simple_board) do
+    ChessBoard.build File.read('samples/simple_board.txt')
   end
 
   it "allows setting squares by coordinate" do
@@ -167,7 +170,7 @@ EOT
     end
 
     it "takes a string as input to initialize the board state" do
-      b = sample_board
+      b = simple_board
       expect(b.at(0,0).piece).to eq(Rook.new(:black))
       expect(b.at(1,1).piece).to eq(Pawn.new(:black))
       expect(b.at(3,7).piece).to eq(Queen.new(:white))
@@ -176,24 +179,55 @@ EOT
 
   describe "lookup" do
     it "looks up squares by x and y coordinate" do
-      expect(sample_board.at(0,0)).to_not be_nil
+      expect(simple_board.at(0,0)).to_not be_nil
     end
 
     it "returns nil for an invalid space" do
-      expect(sample_board.at(-1,-1)).to be_nil
+      expect(simple_board.at(-1,-1)).to be_nil
     end
 
     it "looks up squares by algebraic notation" do
-      expect(sample_board.at('a1').piece).to eq(Rook.new(:white))
-      expect(sample_board.at('h8').piece).to eq(Rook.new(:black))
-      expect(sample_board.at('d7').piece).to eq(Pawn.new(:black))
+      expect(simple_board.at('a1').piece).to eq(Rook.new(:white))
+      expect(simple_board.at('h8').piece).to eq(Rook.new(:black))
+      expect(simple_board.at('d7').piece).to eq(Pawn.new(:black))
     end
 
     it "ignores case in algebraic notation" do
-      expect(sample_board.at('A1').piece).to eq(Rook.new(:white))
-      expect(sample_board.at('H8').piece).to eq(Rook.new(:black))
-      expect(sample_board.at('D7').piece).to eq(Pawn.new(:black))
+      expect(simple_board.at('A1').piece).to eq(Rook.new(:white))
+      expect(simple_board.at('H8').piece).to eq(Rook.new(:black))
+      expect(simple_board.at('D7').piece).to eq(Pawn.new(:black))
     end
   end
 
+  describe "#valid_move?" do
+    it "takes a from and to position and returns something" do
+      expect(simple_board.valid_move?("a2", "a3")).to_not be_nil
+    end
+
+    it "is invalid when the from piece is empty" do
+      expect(simple_board.valid_move?("b3", "a3")).to be_false
+    end
+
+    it "is valid for moving a pawn forward one" do
+      expect(simple_board.valid_move?("b2", "b3")).to be_true
+    end
+  end
+
+end
+
+describe Handler do
+  it "takes an input board and moves" do
+    board = File.read('samples/simple_board.txt')
+    moves = File.read('samples/simple_moves.txt')
+    results = Handler.process(board,moves)
+    expect(results).to_not be_nil
+  end
+
+  it "processes the simple board correctly" do
+    board = File.read('samples/simple_board.txt')
+    moves = File.read('samples/simple_moves.txt')
+    expected_results = File.read('samples/simple_results.txt')
+    results = Handler.process(board,moves)
+    expect(results).to eq(expected_results)
+  end
 end
