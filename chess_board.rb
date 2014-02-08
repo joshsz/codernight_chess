@@ -3,7 +3,6 @@ class Handler
     b = ChessBoard.build(board)
     results = moves.split(/\n/).map do |m|
       f, t = m.split(/ /)
-      puts "checking from #{f} to #{t}"
       b.valid_move?(f,t) ? "LEGAL" : "ILLEGAL"
     end
     results.join("\n")
@@ -35,8 +34,12 @@ class ChessBoard
     from.piece.movements(from, self).include? to
   end
 
-  def set(x,y,piece)
-    at(x,y).piece = piece
+  def set(x_or_coord, y_or_piece, piece=nil)
+    if y_or_piece.respond_to? :movements
+      at(x_or_coord).piece = y_or_piece
+    else
+      at(x_or_coord,y_or_piece).piece = piece
+    end
   end
 
   def at(x,y=nil)
@@ -82,6 +85,10 @@ class Space
 
   def is?(ox,oy)
     x == ox && y == oy
+  end
+
+  def has_enemy?(color)
+    piece && piece.color != color
   end
 
   def ==(other)
@@ -175,8 +182,31 @@ class King < Piece
     list.compact - [current_space]
   end
 end
+
 class Pawn < Piece
-  def movements(current_space, board)
-    [board.at(current_space.x, current_space.y - 1)].compact
+  def movements(s, board)
+    normal_movements(s, board) + capture_movements(s, board)
   end
+
+  private
+
+    def dir
+      dir = white? ? -1 : 1
+    end
+
+    def normal_movements(s,board)
+      set = [board.at(s.x, s.y + dir)].compact
+      if (white? && s.y == 6) || (black? && s.y == 1)
+        set << board.at(s.x, s.y + (dir * 2))
+      end
+      set
+    end
+
+    def capture_movements(s, b)
+      diags = [
+        b.at(s.x - 1, s.y + dir),
+        b.at(s.x + 1, s.y  + dir)
+      ].compact
+      diags.select{|d| d.has_enemy?(color) }
+    end
 end

@@ -1,6 +1,20 @@
 require './chess_board'
 require 'pry'
+
+RSpec::Matchers.define :have_spaces do |board, spaces|
+  match do |actual|
+    actual.sort == spaces.split(/ /).map{|n| board.at(n) }.sort
+  end
+end
+
 describe Piece do
+  let(:simple_board) do
+    ChessBoard.build File.read('samples/simple_board.txt')
+  end
+  let(:complex_board) do
+    ChessBoard.build File.read('samples/complex_board.txt')
+  end
+
   it "requires color to init" do
     ->{
       Piece.new
@@ -50,13 +64,53 @@ describe Piece do
         it "moves up one space" do
           b = ChessBoard.new
           s = b.at('d4')
-          expect(Pawn.new(:white).movements(s,b)).to eq([
-            b.at('d5')
-          ])
+          expect(Pawn.new(:white).movements(s,b)).
+            to have_spaces(b, 'd5')
         end
       end
-        it "moves forward two spaces if it is on its second row"
-        it "moves diagonally if there is an enemy to capture"
+      context "white on row 2" do
+        it "moves forward one or two spaces" do
+          b = ChessBoard.new
+          s = b.at('a2')
+          expect(Pawn.new(:white).movements(s,b)).
+            to have_spaces(b, 'a3 a4')
+        end
+      end
+      context "black on row 2" do
+        it "moves down one space" do
+          b = ChessBoard.new
+          s = b.at('a2')
+          expect(Pawn.new(:black).movements(s,b)).
+            to have_spaces(b, 'a1')
+        end
+      end
+      context "black on row 7" do
+        it "moves forward one or two spaces" do
+          b = ChessBoard.new
+          s = b.at('a7')
+          expect(Pawn.new(:black).movements(s,b)).
+            to have_spaces(b, 'a6 a5')
+        end
+      end
+      context "capturing" do
+        before(:each) { @b = ChessBoard.new }
+        context "white" do
+          before(:each) { @b.set('b3', Pawn.new(:white)) }
+          it "can capture one enemy" do
+            @b.set('a4', Pawn.new(:black))
+            expect(Pawn.new(:white).movements(@b.at('b3'), @b)).
+              to have_spaces(@b, 'a4 b4')
+          end
+          it "can capture two enemies" do
+            @b.set('a4', Pawn.new(:black))
+            @b.set('c4', Pawn.new(:black))
+            expect(Pawn.new(:white).movements(@b.at('b3'), @b)).
+              to have_spaces(@b, 'a4 b4 c4')
+          end
+        end
+      end
+      it "can move on top of an enemy (and capture)"
+      it "cannot move on top of a friendly piece"
 
       # can't actually do en-passant
       # it "moves diagonally if an enemy has just passed it" #en passant
@@ -66,26 +120,36 @@ describe Piece do
       it "moves one space in any direction" do
         b = ChessBoard.new
         s = b.at('d4')
-        expect(King.new(:white).movements(s,b).sort).to eq(
-          %w{c3 c4 c5 d3 d5 e3 e4 e5}.map{|n| b.at(n) }.sort
-        )
+        expect(King.new(:white).movements(s,b).sort).
+          to have_spaces(b, 'c3 c4 c5 d3 d5 e3 e4 e5')
       end
+
+      it "can move on top of an enemy (and capture)"
+      it "cannot move on top of a friendly piece"
     end
 
     describe Queen do
       it "moves any number of spaces in any single direction"
+      it "can move on top of an enemy (and capture)"
+      it "cannot move on top of a friendly piece"
     end
 
     describe Bishop do
       it "moves any number of spaces along a diagonal"
+      it "can move on top of an enemy (and capture)"
+      it "cannot move on top of a friendly piece"
     end
 
     describe Knight do
       it "moves out two and over one"
+      it "can move on top of an enemy (and capture)"
+      it "cannot move on top of a friendly piece"
     end
 
     describe Rook do
       it "moves any number of spaces along a straight line"
+      it "can move on top of an enemy (and capture)"
+      it "cannot move on top of a friendly piece"
     end
 
   end
@@ -120,6 +184,21 @@ describe Space do
     end
     it "allows access to y" do
       expect(s.y).to eq 2
+    end
+  end
+
+  describe "#has_enemy?" do
+    before(:each){ @s = Space.new(1,2) }
+    it "is false when there is no piece" do
+      expect(@s.has_enemy?(:white)).to be_false
+    end
+    it "is false when there is a friendly piece" do
+      @s.piece = Rook.new(:white)
+      expect(@s.has_enemy?(:white)).to be_false
+    end
+    it "is true when there is an enemy piece" do
+      @s.piece = Rook.new(:black)
+      expect(@s.has_enemy?(:white)).to be_true
     end
   end
 
@@ -161,6 +240,12 @@ describe ChessBoard do
     b = ChessBoard.new
     b.set(0, 0, Rook.new(:black))
     expect(b.at(0,0).piece).to eq(Rook.new(:black))
+  end
+
+  it "allows setting squares by notation" do
+    b = ChessBoard.new
+    b.set('a2', Rook.new(:white))
+    expect(b.at('a2').piece).to eq(Rook.new(:white))
   end
 
   describe "setup" do
@@ -224,6 +309,7 @@ describe Handler do
   end
 
   it "processes the simple board correctly" do
+    pending
     board = File.read('samples/simple_board.txt')
     moves = File.read('samples/simple_moves.txt')
     expected_results = File.read('samples/simple_results.txt')
