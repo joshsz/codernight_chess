@@ -1,4 +1,4 @@
-require_relative './spec_helper'
+require_relative '../spec_helper'
 
 describe Handler do
   it "takes an input board and moves" do

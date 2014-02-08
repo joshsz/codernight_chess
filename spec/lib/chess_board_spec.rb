@@ -1,4 +1,4 @@
-require_relative './spec_helper'
+require_relative '../spec_helper'
 describe ChessBoard do
   let(:simple_board) do
     ChessBoard.build File.read('samples/simple_board.txt')

@@ -1,3 +1,4 @@
+
 class Piece
   def initialize(color)
     @color = color
@@ -55,45 +56,9 @@ class Piece
   def movements(current_space, board); []; end
 end
 
-class Rook < Piece ; end
-class Knight < Piece ; end
-class Bishop < Piece ; end
-class Queen < Piece ; end
-class King < Piece
-  def movements(current_space, board)
-    n = (-1..1)
-    list = []
-    fx = current_space.x
-    fy = current_space.y
-    n.each{|x| n.each{|y| list << board.at(fx + x, fy + y) }}
-    list.compact - [current_space]
-  end
-end
-
-class Pawn < Piece
-  def movements(s, board)
-    normal_movements(s, board) + capture_movements(s, board)
-  end
-
-  private
-
-    def dir
-      dir = white? ? -1 : 1
-    end
-
-    def normal_movements(s,board)
-      set = [board.at(s.x, s.y + dir)].compact
-      if (white? && s.y == 6) || (black? && s.y == 1)
-        set << board.at(s.x, s.y + (dir * 2))
-      end
-      set
-    end
-
-    def capture_movements(s, b)
-      diags = [
-        b.at(s.x - 1, s.y + dir),
-        b.at(s.x + 1, s.y  + dir)
-      ].compact
-      diags.select{|d| d.has_enemy?(color) }
-    end
-end
+require_relative './piece/pawn'
+require_relative './piece/king'
+require_relative './piece/queen'
+require_relative './piece/knight'
+require_relative './piece/bishop'
+require_relative './piece/rook'

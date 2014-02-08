@@ -1,4 +1,4 @@
-require_relative './spec_helper'
+require_relative '../spec_helper'
 describe Space do
   it "must be initialized with x and y coords" do
     ->{
