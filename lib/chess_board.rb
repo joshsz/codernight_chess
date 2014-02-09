@@ -39,6 +39,10 @@ class ChessBoard
     end
   end
 
+  def spaces
+    board.flatten
+  end
+
   private
 
     def coords_from_notation(n)
