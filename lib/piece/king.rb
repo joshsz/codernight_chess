@@ -1,13 +1,16 @@
 class King < Piece
   def movements(current_space, board)
+    candidates = basic_movements(current_space, board)
+    candidates.reject{|s| in_check?(current_space, s, board) }
+  end
+
+  def basic_movements(current_space, board)
     n = (-1..1)
     list = []
     fx = current_space.x
     fy = current_space.y
     n.each{|x| n.each{|y| list << board.at(fx + x, fy + y) }}
-    candidates = (list.compact - [current_space]).select{|s| s.piece.nil? || s.has_enemy?(color)}
-
-    candidates.reject{|s| in_check?(current_space, s, board) }
+    (list.compact - [current_space]).select{|s| s.piece.nil? || s.has_enemy?(color)}
   end
 
   def in_check?(current_space, s, b)
@@ -18,7 +21,11 @@ class King < Piece
     enemies = next_b.spaces.select{|p| p.has_enemy?(color) }
 
     would_check = enemies.detect do |e|
-      e.piece.captures(e,next_b).include? s
+      if e.piece.kind_of? King
+        e.piece.basic_movements(e,next_b).include? s
+      else
+        e.piece.captures(e,next_b).include? s
+      end
     end
 
     !would_check.nil?

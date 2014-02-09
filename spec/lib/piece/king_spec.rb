@@ -39,6 +39,16 @@ describe King do
       to have_spaces(b, 'c3 c4 c5 d5 e3 e4 e5')
   end
 
+  context "with two kings" do
+    it "cannot move into check" do
+      b = ChessBoard.new
+      s = b.at('d4')
+      b.set('e4', King.new(:black))
+      expect(King.new(:white).movements(s,b)).
+        to have_spaces(b, 'c3 c4 c5 e4')
+    end
+  end
+
   # it can castle?
 end
 

@@ -3,6 +3,7 @@ class Handler
     b = ChessBoard.build(board)
     results = moves.split(/\n/).map do |m|
       f, t = m.split(/ /)
+      #puts "Checking from #{f} to #{t}"
       b.valid_move?(f,t) ? "LEGAL" : "ILLEGAL"
     end
     "#{results.join("\n")}\n"
