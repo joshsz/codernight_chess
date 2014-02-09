@@ -5,6 +5,6 @@ class King < Piece
     fx = current_space.x
     fy = current_space.y
     n.each{|x| n.each{|y| list << board.at(fx + x, fy + y) }}
-    list.compact - [current_space]
+    (list.compact - [current_space]).select{|s| s.piece.nil? || s.has_enemy?(color)}
   end
 end

@@ -49,8 +49,13 @@ describe Pawn do
       end
     end
   end
-  it "can move on top of an enemy (and capture)"
-  it "cannot move on top of a friendly piece"
+  it "cannot move on top of a friendly piece" do
+      b = ChessBoard.new
+      s = b.at('a7')
+      b.set('b6', Pawn.new(:black))
+      expect(Pawn.new(:black).movements(s,b)).
+        to have_spaces(b, 'a6 a5')
+  end
 
   # can't actually do en-passant
   # it "moves diagonally if an enemy has just passed it" #en passant

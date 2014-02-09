@@ -1,4 +1,3 @@
-
 class Piece
   def initialize(color)
     @color = color
@@ -54,6 +53,21 @@ class Piece
   end
 
   def movements(current_space, board); []; end
+
+  private
+
+    def add_vector_to_set(set, dx, dy, s, b)
+      fx = s.x
+      fy = s.y
+      nx = dx
+      ny = dy
+      while (ns = b.at(fx + nx, fy + ny)) && !ns.nil? && (ns.piece.nil? || ns.has_enemy?(color))
+        set << ns
+        break if ns.has_enemy?(color)
+        nx += dx
+        ny += dy
+      end
+    end
 end
 
 require_relative './piece/pawn'

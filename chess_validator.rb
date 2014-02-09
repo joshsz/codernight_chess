@@ -4,5 +4,7 @@ require_relative './lib/chess_board'
 require_relative './lib/handler'
 
 if __FILE__ == $0
-  puts "TODO!"
+  board = File.read(ARGV[0])
+  moves = File.read(ARGV[1])
+  puts results = Handler.process(board,moves)
 end

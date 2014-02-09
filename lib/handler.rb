@@ -5,6 +5,6 @@ class Handler
       f, t = m.split(/ /)
       b.valid_move?(f,t) ? "LEGAL" : "ILLEGAL"
     end
-    results.join("\n")
+    "#{results.join("\n")}\n"
   end
 end

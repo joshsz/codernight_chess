@@ -9,7 +9,6 @@ describe Handler do
   end
 
   it "processes the simple board correctly" do
-    pending
     board = File.read('samples/simple_board.txt')
     moves = File.read('samples/simple_moves.txt')
     expected_results = File.read('samples/simple_results.txt')
