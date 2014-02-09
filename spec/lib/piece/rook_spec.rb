@@ -18,5 +18,14 @@ describe Rook do
     expect(Rook.new(:white).movements(b.at('d5'), b)).
       to have_spaces(b, 'c5 e5 f5 g5 h5 d1 d2 d3 d4 d6 d7 d8')
   end
+
+  it "returns its list of captures properly" do
+    b = ChessBoard.new
+    s = b.at('d4')
+    b.set('d5', Pawn.new(:black))
+    b.set('e4', Pawn.new(:black))
+    expect(Rook.new(:white).captures(s,b)).
+      to have_spaces(b, 'd5 e4')
+  end
 end
 

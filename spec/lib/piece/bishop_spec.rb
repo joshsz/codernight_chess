@@ -22,4 +22,12 @@ describe Bishop do
       to have_spaces(b, 'c3 b2 a1 c5 b6 a7 e5 f6 g7 h8')
   end
 
+  it "returns its list of captures properly" do
+    b = ChessBoard.new
+    s = b.at('d4')
+    b.set('e5', Pawn.new(:black))
+    expect(Bishop.new(:white).captures(s,b)).
+      to have_spaces(b, 'e5')
+  end
+
 end

@@ -43,6 +43,16 @@ class ChessBoard
     board.flatten
   end
 
+  def clone
+    b = ChessBoard.new
+    board.each_with_index do |row,y|
+      row.each_with_index do |cell,x|
+        b.set(x,y,cell.piece)
+      end
+    end
+    b
+  end
+
   private
 
     def coords_from_notation(n)

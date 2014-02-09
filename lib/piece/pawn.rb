@@ -3,6 +3,10 @@ class Pawn < Piece
     normal_movements(s, board) + capture_movements(s, board)
   end
 
+  def captures(s,b)
+    capture_movements(s, b)
+  end
+
   private
 
     def dir

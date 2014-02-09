@@ -56,6 +56,14 @@ describe Pawn do
       expect(Pawn.new(:black).movements(s,b)).
         to have_spaces(b, 'a6 a5')
   end
+  it "returns its list of captures properly" do
+    b = ChessBoard.new
+    s = b.at('d4')
+    b.set('d5', Pawn.new(:black))
+    b.set('e5', Pawn.new(:black))
+    expect(Pawn.new(:white).captures(s,b)).
+      to have_spaces(b, 'e5')
+  end
 
   # can't actually do en-passant
   # it "moves diagonally if an enemy has just passed it" #en passant

@@ -20,5 +20,13 @@ describe Knight do
     expect(Knight.new(:white).movements(s,b)).
       to have_spaces(b, 'f5 f3 e2 c2 b3 b5 c6')
   end
+  it "returns its list of captures properly" do
+    b = ChessBoard.new
+    s = b.at('d4')
+    b.set('d5', Pawn.new(:black))
+    b.set('e6', Pawn.new(:black))
+    expect(Knight.new(:white).captures(s,b)).
+      to have_spaces(b, 'e6')
+  end
 end
 

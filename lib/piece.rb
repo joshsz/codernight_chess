@@ -54,6 +54,10 @@ class Piece
 
   def movements(current_space, board); []; end
 
+  def captures(s,b)
+    movements(s,b).select{|n| n.has_enemy?(color) }
+  end
+
   private
 
     def add_vector_to_set(set, dx, dy, s, b)

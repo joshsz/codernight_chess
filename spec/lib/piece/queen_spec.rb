@@ -20,5 +20,14 @@ describe Queen do
     expect(Queen.new(:white).movements(s,b)).
       to have_spaces(b, 'a4 b4 c4 e4 f4 g4 h4 d5 d6 d7 d8 e3 f2 g1 c3 b2 a1 c5 b6 a7 e5 f6 g7 h8')
   end
+
+  it "returns its list of captures properly" do
+    b = ChessBoard.new
+    s = b.at('d4')
+    b.set('d5', Pawn.new(:black))
+    b.set('e5', Pawn.new(:black))
+    expect(Queen.new(:white).captures(s,b)).
+      to have_spaces(b, 'd5 e5')
+  end
 end
 

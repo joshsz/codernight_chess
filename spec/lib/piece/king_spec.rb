@@ -12,8 +12,17 @@ describe King do
     s = b.at('d4')
     b.set('e4', Pawn.new(:black))
     expect(King.new(:white).movements(s,b)).
-      to have_spaces(b, 'c3 c4 c5 d3 d5 e3 e4 e5')
+      to have_spaces(b, 'c3 c4 c5 d5 e3 e4 e5')
   end
+
+  it "returns its list of captures properly" do
+    b = ChessBoard.new
+    s = b.at('d4')
+    b.set('e4', Pawn.new(:black))
+    expect(King.new(:white).captures(s,b)).
+      to have_spaces(b, 'e4')
+  end
+
   it "cannot move on top of a friendly piece" do
     b = ChessBoard.new
     s = b.at('d4')
